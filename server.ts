@@ -208,9 +208,10 @@ app.get("/api/dashboard", async (req, res) => {
     if (!t.project_id) return;
     const pid = t.project_id;
     if (!projectStatsMap[pid]) {
+      const pData = Array.isArray(t.projects) ? t.projects[0] : t.projects;
       projectStatsMap[pid] = {
-        name: t.projects?.name || 'Unknown',
-        budget: t.projects?.budget || 0,
+        name: pData?.name || 'Unknown',
+        budget: pData?.budget || 0,
         total_cost: 0,
         pending_cost: 0,
         issue_count: 0
