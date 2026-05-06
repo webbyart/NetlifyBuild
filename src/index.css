@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Source Sans Pro", "Helvetica Neue", "Arial", "sans-serif";
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-admin-blue: #007bff;
+  --color-admin-gray: #6c757d;
+  --color-admin-success: #28a745;
+  --color-admin-danger: #dc3545;
+  --color-admin-warning: #ffc107;
+  --color-admin-dark: #343a40;
+  --color-bg-light: #f4f6f9;
+}
+
+@layer base {
+  body {
+    @apply bg-bg-light text-gray-900;
+  }
+}
+
+/* AdminLTE Specific Classes */
+.admin-card {
+  @apply bg-white rounded shadow-sm border-t-3 border-gray-300;
+}
+
+.admin-card-blue { @apply border-t-admin-blue; }
+.admin-card-success { @apply border-t-admin-success; }
+.admin-card-danger { @apply border-t-admin-danger; }
+.admin-card-warning { @apply border-t-admin-warning; }
+
+.info-box {
+  @apply bg-white rounded shadow-sm flex overflow-hidden h-[70px];
+}
+
+.info-box-icon {
+  @apply w-[60px] flex items-center justify-center text-2xl text-white;
+}
+
+.info-box-content {
+  @apply flex-1 p-2 flex flex-col justify-center;
+}
+
+.bottom-nav-item {
+  @apply flex flex-col items-center justify-center py-2 text-gray-500 transition-colors;
+}
+
+.bottom-nav-item.active {
+  @apply text-admin-blue font-bold;
+}
