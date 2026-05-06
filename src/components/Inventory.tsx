@@ -278,10 +278,14 @@ export default function Inventory() {
                     <button 
                       type="button"
                       onClick={() => {
-                        const subs = editFormData?.sub_units 
-                          ? (Array.isArray(editFormData.sub_units) ? editFormData.sub_units : JSON.parse(editFormData.sub_units)) 
-                          : [];
-                        setEditFormData({ ...editFormData, sub_units: [...subs, { name: '', multiplier: 1 }] });
+                        const currentSubs = editFormData?.sub_units;
+                        let subsArray = [];
+                        if (Array.isArray(currentSubs)) {
+                          subsArray = currentSubs;
+                        } else if (typeof currentSubs === 'string' && currentSubs.trim() !== '') {
+                          try { subsArray = JSON.parse(currentSubs); } catch(e) { subsArray = []; }
+                        }
+                        setEditFormData({ ...editFormData, sub_units: [...subsArray, { name: '', multiplier: 1 }] });
                       }}
                       className="text-admin-blue hover:underline"
                     >
@@ -291,11 +295,15 @@ export default function Inventory() {
                   
                   <div className="space-y-2">
                     {(() => {
-                      const subs = editFormData?.sub_units 
-                        ? (Array.isArray(editFormData.sub_units) ? editFormData.sub_units : JSON.parse(editFormData.sub_units)) 
-                        : [];
+                      const currentSubs = editFormData?.sub_units;
+                      let subsArray = [];
+                      if (Array.isArray(currentSubs)) {
+                        subsArray = currentSubs;
+                      } else if (typeof currentSubs === 'string' && currentSubs.trim() !== '') {
+                        try { subsArray = JSON.parse(currentSubs); } catch(e) { subsArray = []; }
+                      }
                       
-                      return subs.map((sub: any, idx: number) => (
+                      return subsArray.map((sub: any, idx: number) => (
                         <div key={idx} className="flex gap-2 items-center">
                            <input 
                              type="text" 
@@ -303,7 +311,7 @@ export default function Inventory() {
                              className="flex-1 border border-gray-200 rounded p-1.5 text-[11px] font-bold outline-none focus:ring-1 focus:ring-admin-blue"
                              value={sub.name}
                              onChange={(e) => {
-                               const newSubs = [...subs];
+                               const newSubs = [...subsArray];
                                newSubs[idx].name = e.target.value;
                                setEditFormData({ ...editFormData, sub_units: newSubs });
                              }}
@@ -316,7 +324,7 @@ export default function Inventory() {
                                 className="w-16 border border-gray-200 rounded p-1.5 text-[11px] font-bold outline-none focus:ring-1 focus:ring-admin-blue"
                                 value={sub.multiplier}
                                 onChange={(e) => {
-                                  const newSubs = [...subs];
+                                  const newSubs = [...subsArray];
                                   newSubs[idx].multiplier = parseFloat(e.target.value);
                                   setEditFormData({ ...editFormData, sub_units: newSubs });
                                 }}
@@ -325,7 +333,7 @@ export default function Inventory() {
                            <button 
                              type="button"
                              onClick={() => {
-                               const newSubs = [...subs];
+                               const newSubs = [...subsArray];
                                newSubs.splice(idx, 1);
                                setEditFormData({ ...editFormData, sub_units: newSubs });
                              }}
@@ -336,9 +344,19 @@ export default function Inventory() {
                         </div>
                       ));
                     })()}
-                    {(!editFormData?.sub_units || (Array.isArray(editFormData.sub_units) ? editFormData.sub_units.length === 0 : JSON.parse(editFormData.sub_units).length === 0)) && (
-                      <p className="text-[10px] text-gray-400 italic text-center py-2">ไม่มีการกำหนดหน่วยย่อย</p>
-                    )}
+                    {(() => {
+                      const currentSubs = editFormData?.sub_units;
+                      let subsArray = [];
+                      if (Array.isArray(currentSubs)) {
+                        subsArray = currentSubs;
+                      } else if (typeof currentSubs === 'string' && currentSubs.trim() !== '') {
+                        try { subsArray = JSON.parse(currentSubs); } catch(e) { subsArray = []; }
+                      }
+                      if (subsArray.length === 0) {
+                        return <p className="text-[10px] text-gray-400 italic text-center py-2">ไม่มีการกำหนดหน่วยย่อย</p>;
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
 

@@ -98,10 +98,19 @@ export default function Login({ onLogin }: { onLogin: (user: User) => void }) {
           
           <div className="text-center">
             <p className="text-xs text-gray-400">
-              User: admin / password123 หรือ staff1 / password123
+              User: admin / 1234 (Rescue)
             </p>
           </div>
         </form>
+
+        <div className="p-8 pt-0 border-t border-gray-100">
+          <button
+            onClick={() => onLogin({ id: 'bypass', name: 'Guest Access', username: 'guest', role: 'ADMIN' })}
+            className="w-full py-3 text-sm font-semibold text-gray-500 hover:text-blue-600 transition-colors"
+          >
+            ใช้การเข้าถึงฉุกเฉิน (Bypass Login)
+          </button>
+        </div>
       </div>
     </div>
   );
