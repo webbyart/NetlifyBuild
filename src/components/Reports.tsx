@@ -69,8 +69,8 @@ const generateDocument = (type: 'INVOICE' | 'TAX_INVOICE' | 'DELIVERY', txn: any
   doc.text('DOCUMENT INFO:', 140, 45);
   doc.setTextColor(0);
   doc.text(`Date: ${txn.datetime?.split(' ')[0] || ''}`, 140, 50);
-  doc.text(`ID: ${codeMap[type]}-${(txn.id || '').toString().substring(0, 8).toUpperCase()}`, 140, 55);
-  doc.text(`Ref: ${(txn.id || '').toString().substring(0, 8)}`, 140, 60);
+  doc.text(`ID: ${codeMap[type]}-${String(txn.id || '').substring(0, 8).toUpperCase()}`, 140, 55);
+  doc.text(`Ref: ${String(txn.id || '').substring(0, 8)}`, 140, 60);
 
   // Items Table
   const tableData = [[
@@ -103,7 +103,7 @@ const generateDocument = (type: 'INVOICE' | 'TAX_INVOICE' | 'DELIVERY', txn: any
   doc.setTextColor(150);
   doc.text('This is a computer-generated document. No signature required.', 105, 280, { align: 'center' });
 
-  doc.save(`${type}_${txn.id.substring(0, 8)}.pdf`);
+  doc.save(`${type}_${String(txn.id).substring(0, 8)}.pdf`);
 };
 
 export default function Reports() {
@@ -363,7 +363,7 @@ export default function Reports() {
                        <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                              <div className="w-5 h-5 bg-gray-200 rounded-full flex items-center justify-center text-[8px] font-bold">
-                                {t.user_name?.substring(0, 2)}
+                                {String(t.user_name || '').substring(0, 2)}
                              </div>
                              <div className="text-gray-600 font-bold">{t.user_name}</div>
                           </div>

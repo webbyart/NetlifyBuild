@@ -29,6 +29,7 @@ import Workflow from './components/Workflow';
 import Approvals from './components/Approvals';
 import Settings from './components/Settings';
 import Login from './components/Login';
+import Invoices from './components/Invoices';
 
 const Layout = ({ user, logout, children }: { user: User, logout: () => void, children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -50,6 +51,7 @@ const Layout = ({ user, logout, children }: { user: User, logout: () => void, ch
   const menuItems = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
     { name: 'สต๊อกสินค้า', path: '/stock', icon: Package },
+    { name: 'ใบสำคัญ (Bills)', path: '/invoices', icon: FileText },
     { name: 'อนุมัติเบิก', path: '/approvals', icon: Bell, badge: pendingCount },
     { name: 'โปรเจค', path: '/projects', icon: Briefcase },
     { name: 'ปฏิทินงาน', path: '/calendar', icon: Calendar },
@@ -187,32 +189,21 @@ const Layout = ({ user, logout, children }: { user: User, logout: () => void, ch
 
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null;
+  const [user] = useState<User>({ 
+    id: 'admin-id', 
+    name: 'Admin User', 
+    username: 'admin', 
+    role: 'ADMIN' 
   });
-
-  const login = (userData: User) => {
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-  };
-
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-  };
-
-  if (!user) {
-    return <Login onLogin={login} />;
-  }
 
   return (
     <BrowserRouter>
-      <Layout user={user} logout={logout}>
+      <Layout user={user} logout={() => {}}>
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/stock" element={<Inventory />} />
           <Route path="/approvals" element={<Approvals />} />
+          <Route path="/invoices" element={<Invoices />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/calendar" element={<CalendarView />} />
           <Route path="/issue" element={<IssueForm user={user} />} />
