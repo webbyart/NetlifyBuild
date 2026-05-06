@@ -57,6 +57,30 @@ app.get("/api/products/low-stock", async (req, res) => {
   res.json(lowStock || []);
 });
 
+app.post("/api/products/bulk", async (req, res) => {
+  const productsData = req.body;
+  if (!Array.isArray(productsData)) return res.status(400).json({ error: "Invalid data" });
+
+  // Clean data: Ensure numeric fields are numbers
+  const cleaned = productsData.map(p => ({
+    ...p,
+    stock_qty: Number(p.stock_qty) || 0,
+    cost_price: Number(p.cost_price) || 0,
+    min_alert: Number(p.min_alert) || 0
+  }));
+
+  const { data, error } = await supabase
+    .from("products")
+    .upsert(cleaned, { onConflict: 'qr_code' })
+    .select();
+
+  if (error) {
+    console.error('Bulk upsert error:', error);
+    return res.status(500).json({ message: error.message });
+  }
+  res.json(data);
+});
+
 app.get("/api/products/:id/qr", async (req, res) => {
   const { data: product } = await supabase.from("products").select("*").eq("id", req.params.id).single();
   if (!product) return res.status(404).json({ message: "ไม่พบสินค้า" });

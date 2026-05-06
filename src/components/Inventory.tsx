@@ -9,20 +9,25 @@ import {
   MoreVertical,
   QrCode,
   X,
-  Printer
+  Printer,
+  Upload
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Product } from '../types';
+import * as XLSX from 'xlsx';
 
 export default function Inventory() {
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [importing, setImporting] = useState(false);
   const [filterMode, setFilterMode] = useState<'ALL' | 'LOW'>('ALL');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedQR, setSelectedQR] = useState<{ url: string, name: string } | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [editFormData, setEditFormData] = useState<any>(null);
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const fetchProducts = () => {
     fetch('/api/products')
@@ -31,6 +36,61 @@ export default function Inventory() {
         setProducts(data);
         setLoading(false);
       });
+  };
+
+  const handleImportExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const bstr = event.target?.result;
+        const workbook = XLSX.read(bstr, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const data = XLSX.utils.sheet_to_json(worksheet);
+
+        // Map Excel headers to database fields
+        const mappedProducts = data.map((row: any) => ({
+          qr_code: row['รหัสสินค้า'] || row['Code'] || row['qr_code'] || '',
+          name: row['รายละเอียด'] || row['Description'] || row['name'] || '',
+          stock_qty: Number(row['จำนวนที่มีของ'] || row['Stock'] || row['stock_qty'] || 0),
+          unit: row['หน่วย'] || row['Unit'] || row['unit'] || 'ชิ้น',
+          category: row['หมวดหมู่'] || row['Category'] || row['category'] || 'GENERAL',
+          cost_price: Number(row['ต้นทุน'] || row['Price'] || row['cost_price'] || 0),
+          min_alert: Number(row['Min'] || row['min_alert'] || 5)
+        })).filter(p => p.name !== '');
+
+        if (mappedProducts.length === 0) {
+          alert('ไม่พบข้อมูลที่ถูกต้องในไฟล์ Excel');
+          setImporting(false);
+          return;
+        }
+
+        const res = await fetch('/api/products/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(mappedProducts)
+        });
+
+        if (res.ok) {
+          alert(`นำเข้าข้อมูลสำเร็จ ${mappedProducts.length} รายการ`);
+          fetchProducts();
+        } else {
+          const err = await res.json();
+          alert('นำเข้าข้อมูลล้มเหลว: ' + err.message);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('เกิดข้อผิดพลาดในการประมวลผลไฟล์');
+      } finally {
+        setImporting(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    };
+    reader.readAsBinaryString(file);
   };
 
   useEffect(() => {
@@ -132,7 +192,22 @@ export default function Inventory() {
             />
           </div>
           <div className="flex gap-2">
-             <button className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded text-xs font-bold text-gray-600 hover:bg-gray-50">
+            <input 
+              type="file" 
+              ref={fileInputRef}
+              className="hidden" 
+              accept=".xlsx, .xls"
+              onChange={handleImportExcel}
+            />
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+              className="flex items-center gap-2 px-3 py-1.5 bg-admin-blue/10 text-admin-blue border border-admin-blue/20 rounded text-xs font-bold hover:bg-admin-blue/20 disabled:opacity-50"
+            >
+              <Upload className="w-3.5 h-3.5" /> 
+              {importing ? 'Importing...' : 'Import Excel'}
+            </button>
+            <button className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded text-xs font-bold text-gray-600 hover:bg-gray-50">
               <Download className="w-3.5 h-3.5" /> Export
             </button>
           </div>
